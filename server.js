@@ -87,6 +87,17 @@ app.get('/api/exercise/log', (req, res) => {
   })
 })
 
+app.get('/api/exercise/users', (req, res) => {
+  Users.find().exec((err, result) => {
+    if (err) res.json({ error: err.messages })
+    const response = result.map((item) => ({
+      _id: item._id,
+      username: item.username,
+    }))
+    res.json(response)
+  })
+})
+
 const listener = app.listen(process.env.PORT || 3000, () => {
   console.log('Your app is listening on port ' + listener.address().port)
 })
