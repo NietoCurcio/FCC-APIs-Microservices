@@ -44,6 +44,7 @@ app.post('/api/exercise/add', (req, res) => {
   const description = req.body.description
   const duration = req.body.duration
   const date = req.body.date
+  if (!date) date = new Date().toDateString()
 
   Users.findById(userId, (err, userResult) => {
     if (err) return res.json({ error: err.messages })
