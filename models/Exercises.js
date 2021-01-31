@@ -5,7 +5,7 @@ const ExercisesSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'user',
   },
-  date: String,
+  date: Date,
   duration: Number,
   description: String,
 })

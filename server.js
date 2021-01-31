@@ -50,7 +50,7 @@ app.post('/api/exercise/add', (req, res) => {
     if (!userResult) res.send('Unkown userId')
     const exercise = new Exercises({
       user: userResult._id,
-      date: new Date(date).toDateString(),
+      date: new Date(date),
       duration,
       description,
     })
@@ -59,7 +59,7 @@ app.post('/api/exercise/add', (req, res) => {
       res.json({
         _id: userResult._id,
         username: userResult.username,
-        date: result.date,
+        date: result.date.toDateString(),
         duration: result.duration,
         description: result.description,
       })
@@ -68,18 +68,42 @@ app.post('/api/exercise/add', (req, res) => {
 })
 
 app.get('/api/exercise/log', (req, res) => {
+  // log of any user. from and to are dates in yyyy-mm-dd format. limit is an integer of how many
+  // logs to send back.
   const userId = req.query.userId
+  const from = new Date(req.query.from)
+  const to = new Date(req.query.to)
+  const limit = req.query.limit
+
   if (!userId) return res.send('Unkown userId')
 
   Users.findById(userId, (err, userResult) => {
+    if (!userResult) return res.send('Unkown userId')
     const username = userResult.username
-    Exercises.find({ user: userId }).exec((err, result) => {
+
+    let findExerciseChain
+    if (req.query.from && req.query.to) {
+      findExerciseChain = Exercises.find({
+        user: userId,
+        date: { $gte: new Date(from), $lte: new Date(to) },
+      })
+    } else {
+      findExerciseChain = Exercises.find({
+        user: userId,
+      })
+    }
+
+    if (limit) {
+      findExerciseChain.limit(Number.parseInt(limit))
+    }
+
+    findExerciseChain.exec((err, result) => {
       const count = result.length
       const log = result.map((item) => {
         return {
           description: item.description,
           duration: item.duration,
-          date: item.date,
+          date: item.date.toDateString(),
         }
       })
       res.json({ _id: userId, username, count, log })
